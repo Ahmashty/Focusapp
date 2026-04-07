@@ -54,8 +54,11 @@ button {
 <h1>🔥 Focus Mode</h1>
 
 <input id="minutes" type="number" placeholder="Min" value="25">
+  <input id="sessionName" type="text" placeholder="Session Name z.B. Schule, Quran">
+  
 
 <div id="timer">25:00</div>
+  <div>Aktuelle Session: <span id="currentSession">Keine</span></div>
 
 <button class="start" onclick="start()">Start</button>
 <button class="pause" onclick="pause()">Pause</button>
@@ -92,24 +95,34 @@ function updateDisplay() {
 function start() {
   if (running) return;
 
-  let inputMin = parseInt(document.getElementById("minutes").value);
+  // Session Name
+  let name = document.getElementById("sessionName").value;
+  document.getElementById("currentSession").innerText = name;
+  if (!name) {
+    alert("Bitte einen Namen eingeben!");
+    return;
+  }
 
+  let inputMin = parseInt(document.getElementById("minutes").value);
   if (!inputMin || inputMin <= 0) {
     alert("Gib eine gültige Zeit ein!");
     return;
   }
 
-  time = inputMin * 60; // 🔥 IMMER neu setzen
-
+  time = inputMin * 60;
   running = true;
+
+  // Speichere Session-Name lokal
+  localStorage.setItem("currentSessionName", name);
 
   interval = setInterval(() => {
     time--;
     updateDisplay();
 
-    if (time <= 0) finish();
+    if (time <= 0) finish(name, inputMin); // Übergibt Name
   }, 1000);
 }
+
 
 function pause() {
   running = false;
@@ -127,12 +140,10 @@ function reset() {
   updateDisplay();
 }
 
-function finish() {
+function finish(name, minutes) {
   pause();
-
   document.getElementById("sound").play();
-
-  alert("Session geschafft 🔥");
+  alert(`Session "${name}" geschafft 🔥`);
 
   // streak erhöhen
   streak++;
@@ -140,11 +151,16 @@ function finish() {
   document.getElementById("streak").innerText = streak;
 
   // Gesamtzeit speichern
-  let inputMin = document.getElementById("minutes").value;
-  total = parseInt(total) + parseInt(inputMin);
+  total = parseInt(total) + parseInt(minutes);
   localStorage.setItem("total", total);
   document.getElementById("total").innerText = total;
+
+  // Optional: Pro Session speichern
+  let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+  sessions.push({ name: name, minutes: minutes, date: new Date().toLocaleString() });
+  localStorage.setItem("sessions", JSON.stringify(sessions));
 }
+
 
 // 😈 Strafe bei Tab-Wechsel
 document.addEventListener("visibilitychange", () => {
