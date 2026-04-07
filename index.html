@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Focus App</title>
+
+<style>
+body {
+  background: #0f172a;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  margin-top: 80px;
+}
+
+h1 {
+  font-size: 40px;
+}
+
+#timer {
+  font-size: 80px;
+  margin: 20px;
+}
+
+input {
+  font-size: 20px;
+  width: 80px;
+  text-align: center;
+}
+
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.start { background: #22c55e; }
+.pause { background: #eab308; }
+.reset { background: #ef4444; }
+
+.stats {
+  margin-top: 30px;
+  font-size: 18px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Focus Mode</h1>
+
+<input id="minutes" type="number" placeholder="Min" value="25">
+
+<div id="timer">25:00</div>
+
+<button class="start" onclick="start()">Start</button>
+<button class="pause" onclick="pause()">Pause</button>
+<button class="reset" onclick="reset()">Reset</button>
+
+<div class="stats">
+  🔥 Streak: <span id="streak">0</span><br>
+  ⏱ Gesamtzeit: <span id="total">0</span> min
+</div>
+
+<audio id="sound">
+  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
+</audio>
+
+<script>
+let time = 25 * 60;
+let interval = null;
+let running = false;
+
+// Load saved data
+let streak = localStorage.getItem("streak") || 0;
+let total = localStorage.getItem("total") || 0;
+
+document.getElementById("streak").innerText = streak;
+document.getElementById("total").innerText = total;
+
+function updateDisplay() {
+  let m = Math.floor(time / 60);
+  let s = time % 60;
+  document.getElementById("timer").innerText =
+    `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function start() {
+  if (running) return;
+
+  let inputMin = document.getElementById("minutes").value;
+  if (!interval) time = inputMin * 60;
+
+  running = true;
+
+  interval = setInterval(() => {
+    time--;
+    updateDisplay();
+
+    if (time <= 0) finish();
+  }, 1000);
+}
+
+function pause() {
+  running = false;
+  clearInterval(interval);
+  interval = null;
+}
+
+function reset() {
+  pause();
+  let inputMin = document.getElementById("minutes").value;
+  time = inputMin * 60;
+  updateDisplay();
+}
+
+function finish() {
+  pause();
+
+  document.getElementById("sound").play();
+
+  alert("Session geschafft 🔥");
+
+  // streak erhöhen
+  streak++;
+  localStorage.setItem("streak", streak);
+  document.getElementById("streak").innerText = streak;
+
+  // Gesamtzeit speichern
+  let inputMin = document.getElementById("minutes").value;
+  total = parseInt(total) + parseInt(inputMin);
+  localStorage.setItem("total", total);
+  document.getElementById("total").innerText = total;
+}
+
+// 😈 Strafe bei Tab-Wechsel
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && running) {
+    alert("Nicht schummeln 😈 +5 Minuten Strafe!");
+    time += 5 * 60;
+  }
+});
+
+updateDisplay();
+</script>
+
+</body>
+</html>
