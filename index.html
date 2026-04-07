@@ -92,8 +92,14 @@ function updateDisplay() {
 function start() {
   if (running) return;
 
-  let inputMin = document.getElementById("minutes").value;
-  if (!interval) time = inputMin * 60;
+  let inputMin = parseInt(document.getElementById("minutes").value);
+
+  if (!inputMin || inputMin <= 0) {
+    alert("Gib eine gültige Zeit ein!");
+    return;
+  }
+
+  time = inputMin * 60; // 🔥 IMMER neu setzen
 
   running = true;
 
@@ -112,9 +118,12 @@ function pause() {
 }
 
 function reset() {
-  pause();
-  let inputMin = document.getElementById("minutes").value;
+  clearInterval(interval);
+  running = false;
+
+  let inputMin = parseInt(document.getElementById("minutes").value);
   time = inputMin * 60;
+
   updateDisplay();
 }
 
@@ -146,6 +155,13 @@ document.addEventListener("visibilitychange", () => {
 });
 
 updateDisplay();
+  document.getElementById("minutes").addEventListener("input", () => {
+  let val = parseInt(document.getElementById("minutes").value);
+  if (val > 0 && !running) {
+    time = val * 60;
+    updateDisplay();
+  }
+});
 </script>
 
 </body>
