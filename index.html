@@ -159,6 +159,7 @@ function finish(name, minutes) {
   let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
   sessions.push({ name: name, minutes: minutes, date: new Date().toLocaleString() });
   localStorage.setItem("sessions", JSON.stringify(sessions));
+  loadSessions();
 }
 
 
@@ -178,6 +179,66 @@ updateDisplay();
     updateDisplay();
   }
 });
+
+  function loadSessions() {
+  let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+
+  let list = document.getElementById("sessionList");
+  list.innerHTML = "";
+
+  let totalTime = 0;
+
+  sessions.reverse().forEach((s, index) => {
+    totalTime += parseInt(s.minutes);
+
+    let li = document.createElement("li");
+    li.innerHTML = `
+      <b>${s.name}</b> - ${s.minutes} min<br>
+      <small>${s.date}</small><br>
+      <button onclick="deleteSession(${index})">❌</button>
+      <hr>
+    `;
+    list.appendChild(li);
+  });
+
+  document.getElementById("sessionCount").innerText = sessions.length;
+  document.getElementById("totalTime").innerText = totalTime;
+}
+
+// Einzelne Session löschen
+function deleteSession(index) {
+  let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+
+  // wegen reverse → richtigen Index holen
+  sessions.splice(sessions.length - 1 - index, 1);
+
+  localStorage.setItem("sessions", JSON.stringify(sessions));
+  loadSessions();
+}
+
+// Alle löschen
+function clearSessions() {
+  if (confirm("Alles löschen? 😈")) {
+    localStorage.removeItem("sessions");
+    loadSessions();
+  }
+}
+
+  <hr>
+
+<h2>📊 Dashboard</h2>
+
+<div>
+  📈 Sessions gesamt: <span id="sessionCount">0</span><br>
+  ⏱ Gesamtzeit: <span id="totalTime">0</span> min
+</div>
+
+<br>
+
+<button onclick="clearSessions()">Alle löschen</button>
+
+<ul id="sessionList"></ul>
+  loadSessions();
 </script>
 
 </body>
